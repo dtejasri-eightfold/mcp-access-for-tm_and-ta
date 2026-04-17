@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Briefcase, Plus, Sparkles, Send, Cpu } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import './CareerAgent.css';
 
 const BACKEND_URL = 'http://localhost:3001';
@@ -23,6 +24,11 @@ const CareerAgent = () => {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
+
+  // Fire the opening profile summary automatically on first load
+  useEffect(() => {
+    sendMessage('__INIT__');
+  }, []); // eslint-disable-line
 
   // Auto-resize textarea
   useEffect(() => {
@@ -79,6 +85,7 @@ const CareerAgent = () => {
     setMessages([]);
     historyRef.current = [];
     setInput('');
+    setTimeout(() => sendMessage('__INIT__'), 0);
   };
 
   return (
@@ -116,7 +123,7 @@ const CareerAgent = () => {
         </header>
 
         <div className="chat-messages">
-          {messages.length === 0 ? (
+          {messages.filter(msg => msg.content !== '__INIT__').length === 0 && !isTyping ? (
             <div className="chat-empty">
               <div className="chat-empty-heading">
                 What would you like to<br />
@@ -135,9 +142,9 @@ const CareerAgent = () => {
                 ))}
               </div>
             </div>
-          ) : (
+          ) : messages.filter(msg => msg.content !== '__INIT__').length > 0 || isTyping ? (
             <div className="messages-inner">
-              {messages.map((msg, i) =>
+              {messages.filter(msg => msg.content !== '__INIT__').map((msg, i) =>
                 msg.role === 'user' ? (
                   <div key={i} className="msg-row user">
                     <div className="msg-user-bubble">{msg.content}</div>
@@ -148,7 +155,7 @@ const CareerAgent = () => {
                       <Sparkles size={14} />
                     </div>
                     <div className="msg-assistant-content">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                     </div>
                   </div>
                 )
@@ -167,7 +174,7 @@ const CareerAgent = () => {
 
               <div ref={bottomRef} />
             </div>
-          )}
+          ) : null}
 
           {messages.length === 0 && <div ref={bottomRef} />}
         </div>
