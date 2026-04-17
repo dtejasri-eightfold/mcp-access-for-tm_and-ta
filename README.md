@@ -106,3 +106,21 @@ npm run server   # Start Express backend (port 3001)
 npm run build    # Production build
 npm run lint     # Run ESLint
 ```
+
+## Demo environment
+
+This agent is configured to work with the **`careernavdemo` group** on Eightfold's demo environment. The MCP token in `src/config.js` is scoped to that group — using it against a different group will return no data or errors.
+
+### Troubleshooting
+
+**Getting empty responses or MCP errors?**
+The most likely cause is an expired token. The token has a fixed expiry — check the comment at the top of `src/config.js` for the expiration date.
+
+To fix: replace `MCP_TOKEN` in `src/config.js` with a fresh token scoped to `careernavdemo`.
+
+```js
+// src/config.js
+export const MCP_TOKEN = "your-new-token-here"; // update when expired
+```
+
+Restart the server after updating the token — it is loaded once at startup.
